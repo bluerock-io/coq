@@ -86,24 +86,6 @@ which allows clients, such as CoqIDE, to interact with Coq in a
 structured way."))
 
 (package
- (name coqide)
- (depends
-  (ocamlfind :build)
-  (conf-findutils :build)
-  conf-adwaita-icon-theme
-  (coqide-server (= :version))
-  (cairo2 (>= 0.6.4))
-  (lablgtk3-sourceview3 (and (>= 3.1.2) (or (>= 3.1.5) (<> :os "windows")))))
- (synopsis "The Coq Proof Assistant --- GTK3 IDE")
- (description "Coq is a formal proof management system. It provides
-a formal language to write mathematical definitions, executable
-algorithms and theorems together with an environment for
-semi-interactive development of machine-checked proofs.
-
-This package provides the CoqIDE, a graphical user interface for the
-development of interactive proofs."))
-
-(package
  (name coq-doc)
  (allow_empty)
  (license "OPUBL-1.0")
