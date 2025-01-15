@@ -67,17 +67,6 @@
  (targets shared_os_stubs.c)
  (action (copy shared_%{read:gtk_platform.conf}.c.in %{targets})))
 
-(executable
- (name rocqide_main)
- (public_name coqide)
- (package coqide)
- (modules rocqide_main)
- (modes exe byte)
- (libraries coqide_gui))
-
-(documentation
- (package coqide))
-
 ; Input-method bindings
 (executable
  (name default_bindings_src)
@@ -87,15 +76,3 @@
  (targets default.bindings)
  (deps (:gen ./default_bindings_src.exe))
  (action (run %{gen} %{targets})))
-
-; FIXME: we should install those in share/coqide. We better do this
-; once the make-based system has been phased out.
-(install
- (section share_root)
- (package coqide)
- (files
-  (coq.png as coq/coq.png)
-  (default.bindings as coq/default.bindings)
-  (coq_style.xml as coq/coq_style.xml)
-  (coq.lang as coq/coq.lang)
-  (coq-ssreflect.lang as coq/coq-ssreflect.lang)))
