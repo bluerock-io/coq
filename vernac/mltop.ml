@@ -75,6 +75,8 @@ module Fl_internals = struct
 
 end
 
+let dbg_dynlink = CDebug.create ~name:"dynlink" ()
+
 module PluginSpec : sig
 
   type t
@@ -149,15 +151,23 @@ end = struct
 
   let load = function
     | { lib } ->
-      (* no point in using Fl_dynload since we [add_deps] to get digests *)
-      let plugins = Fl_internals.fl_find_plugins lib in
-      List.iter Dynlink.loadfile plugins
+      if Findlib.is_recorded_package lib then
+        dbg_dynlink Pp.(fun () -> str lib ++ str " already loaded")
+      else begin
+        (* no point in using Fl_dynload since we [add_deps] to get digests *)
+        let plugins = Fl_internals.fl_find_plugins lib in
+        dbg_dynlink Pp.(fun () ->
+            str lib ++ str ": linking" ++ spc() ++
+            prlist_with_sep spc str plugins);
+        List.iter Dynlink.loadfile plugins;
+        Findlib.record_package Record_load lib
+      end
 
   let add_deps plugins =
     let explicit = Set.of_list plugins in
     let preds = Findlib.recorded_predicates() in
     let allplugins = Findlib.package_deep_ancestors preds (List.map to_package plugins) in
-    List.filter_map (fun lib ->
+    let deps = List.filter_map (fun lib ->
         (* comes from findlib so guaranteed valid *)
         let plugin = { lib } in
         let explicit = Set.mem plugin explicit in
@@ -165,6 +175,13 @@ end = struct
         if not explicit && Findlib.is_recorded_package lib then None
         else Some (not explicit, plugin))
       allplugins
+    in
+    dbg_dynlink Pp.(fun () ->
+        str "for " ++ prlist_with_sep spc (fun {lib} -> str lib) plugins ++
+        str ":" ++ fnl() ++
+        str "all deps " ++ prlist_with_sep spc str allplugins ++ fnl() ++
+        str "filtered " ++ prlist_with_sep spc (fun (_,{lib}) -> str lib) deps);
+    deps
 
   let digest s =
     match s with
